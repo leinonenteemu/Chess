@@ -1,9 +1,10 @@
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 public class BoardGenerator : MonoBehaviour
 {
-    [SerializeField] private int width = 8, height = 8;
+    [SerializeField] private const int width = 8, height = 8;
     private Grid _grid;
 
     [SerializeField] private bool _drawGizmos;
@@ -19,6 +20,15 @@ public class BoardGenerator : MonoBehaviour
         return true;
     }
 
+    public bool GetSquare(Vector2Int squareCoords, out Square square) 
+    {
+        square = null;
+        if (!IsValidSquare(squareCoords)) return false;
+
+        square = _squares[squareCoords.x, squareCoords.y];
+        return true;
+    }
+
     private void SetupBoard() 
     {
         foreach (var setup in _boardSetup.pieceSetups) 
@@ -27,12 +37,16 @@ public class BoardGenerator : MonoBehaviour
             {
                 if (IsValidSquare(position)) 
                 {
-                    Pawn p = new Pawn(_testPiece, setup.side);
-                    MovePieceToSquare(p, _squares[position.x,position.y]);
-                    GameObject g = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    var pos = new Vector3(p.currentSquare.x, p.currentSquare.y, 0);
-                    g.transform.localScale *= 0.5f;
-                    g.transform.position = pos + transform.position;
+                    var piece = PieceBuilder.BuildPiece(setup.piece, setup.side);
+                    MovePieceToSquare(piece, _squares[position.x,position.y]);
+                    GameObject g = new GameObject();
+                    var rend = g.GetOrAddComponent<SpriteRenderer>();
+                    rend.sprite = piece.sprite;
+
+                    var pos = new Vector3(piece.currentSquare.x+transform.position.x, piece.currentSquare.y+transform.position.y, -1);
+                    g.transform.position = pos;
+                    piece.SetGameObject(g);
+                    Debug.Log("Kys");
                 }
             }
         }
@@ -53,28 +67,25 @@ public class BoardGenerator : MonoBehaviour
         SetupBoard();
     }
 
-    Pawn p;
-    Pawn enemyPawn;
-
     List<Square> possibleSquares = new List<Square>();
 
     private void Start()
     {
         //var list = _movementSets.GetSquares(new Vector2Int(2, 2), PieceType.Bishop);
         //var cleanedList = list.Where(coordinate => IsValidSquare(coordinate));
-        p = new Pawn(_testPiece, Side.White);
-        enemyPawn = new Pawn(_testPiece, Side.White);
-        MovePieceToSquare(enemyPawn, _squares[1,5]);
-        var newPositionList = getPossibleSquares(_testPiece.GetMovementSets, _squares[3, 4], p);
-        possibleSquares = newPositionList;
+        //p = new Pawn(_testPiece, Side.White);
+        //enemyPawn = new Pawn(_testPiece, Side.White);
+        //MovePieceToSquare(enemyPawn, _squares[1,5]);
+        //var newPositionList = getPossibleSquares(_testPiece.GetMovementSets, _squares[3, 4], p);
+        //possibleSquares = newPositionList;
 
-        //foreach (var c in newPositionList)
-        //{
-        //    p = new Pawn(_testPiece, Side.White);
-        //    Debug.Log("CorD: " +c);
-        //    MovePieceToSquare(p, _squares[c.x, c.y]);
-        //}
-        Debug.Log("List count: " + newPositionList.Count());
+        ////foreach (var c in newPositionList)
+        ////{
+        ////    p = new Pawn(_testPiece, Side.White);
+        ////    Debug.Log("CorD: " +c);
+        ////    MovePieceToSquare(p, _squares[c.x, c.y]);
+        ////}
+        //Debug.Log("List count: " + newPositionList.Count());
     }
 
     private void OnDrawGizmos()
@@ -93,8 +104,10 @@ public class BoardGenerator : MonoBehaviour
 
     void MovePieceToSquare(ChessPiece piece, Square square) 
     {
-        piece.Move(square);
+        if (piece == null || square == null) return;
+        if (piece.currentSquare != null) piece.currentSquare.occupant = null;
         square.occupant = piece;
+        piece.currentSquare = square;
     }
 
     void ClearSquare(Square square) 
