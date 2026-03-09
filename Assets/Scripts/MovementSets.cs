@@ -1,10 +1,5 @@
 using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Unity.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 public class MovementSets
 {
@@ -104,5 +99,5 @@ public class MovementSets
 
 public enum PieceType 
 { 
-    Knight, Rook, Bishop
+    Knight, Rook, Bishop, Pawn, Queen, King
 }

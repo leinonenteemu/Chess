@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 public class BoardGenerator : MonoBehaviour
 {
     [SerializeField] private int width = 8, height = 8;
@@ -9,6 +10,7 @@ public class BoardGenerator : MonoBehaviour
     Square[,] _squares;
 
     MovementSets _movementSets = new MovementSets();
+    [SerializeField] Piece _testPiece;
 
     private bool IsValidSquare(Vector2Int squareCoords) 
     {
@@ -34,15 +36,18 @@ public class BoardGenerator : MonoBehaviour
 
     private void Start()
     {
-        var list = _movementSets.GetSquares(new Vector2Int(2, 2), PieceType.Bishop);
-        var cleanedList = list.Where(coordinate => IsValidSquare(coordinate));
-        foreach (var c in cleanedList)
+        //var list = _movementSets.GetSquares(new Vector2Int(2, 2), PieceType.Bishop);
+        //var cleanedList = list.Where(coordinate => IsValidSquare(coordinate));
+
+        var newPositionList = getPossibleSquares(_testPiece.GetMovementSets, _squares[3, 6], p);
+
+        foreach (var c in newPositionList)
         {
             Pawn p = new Pawn();
             Debug.Log("CorD: " +c);
             MovePieceToSquare(p, _squares[c.x, c.y]);
         }
-        Debug.Log("List count: " + cleanedList.Count());
+        Debug.Log("List count: " + newPositionList.Count());
     }
 
     private void OnDrawGizmos()
@@ -53,7 +58,7 @@ public class BoardGenerator : MonoBehaviour
         {
             Debug.Log("Has occupant? " + cell.occupant != null);
             Gizmos.color = cell.occupant == null ? Color.red : Color.green;
-            float radius = cell.occupant == null ? 0.25f : 0.15f;
+            float radius = !cell.IsOccupied ? 0.25f : 0.15f;
             //Vector3 worldPos = new Vector3(transform.position.x+cell.position.x, transform.position.y+cell.position.y, 0);
             Gizmos.DrawSphere(new Vector2(transform.position.x+cell.x,transform.position.y+cell.y), radius);
         }
@@ -69,6 +74,43 @@ public class BoardGenerator : MonoBehaviour
     {
         square.occupant = null;
     }
+
+    List<Square> getPossibleSquares(in Movement[] movements, Square startSquare, ChessPiece piece) 
+    {
+        List<Square> availableSquares = new List<Square>();
+
+        foreach (var move in movements) 
+        {
+            int maxSquares = move.GetMaxSquares();
+            for (int i = 1; i <= maxSquares; i++) 
+            { 
+                int x = move.GetDirection().x * i;
+                int y = move.GetDirection().y * i;
+
+                Vector2Int pos = new Vector2Int(startSquare.x + x, startSquare.y + y);
+                
+                if (IsValidSquare(pos)) 
+                {
+                    Square square = _squares[pos.x, pos.y];
+                    if (square.IsOccupied && square.occupant.IsSameSidePiece(piece)) break;
+                    availableSquares.Add(_squares[pos.x,pos.y]); 
+                }
+
+                if (move.IsBiDirectional()) 
+                {
+                    pos = new Vector2Int(startSquare.x - x, startSquare.y - y);
+                    if (IsValidSquare(pos))
+                    {
+                        Square square = _squares[pos.x, pos.y];
+                        if (square.IsOccupied && square.occupant.IsSameSidePiece(piece)) break;
+                        availableSquares.Add(_squares[pos.x, pos.y]);
+                    }
+                }
+            }
+        }
+
+        return availableSquares;
+    }
 }
 
 [System.Serializable]
@@ -82,4 +124,5 @@ public class Square
     }
 
     public ChessPiece occupant;
+    public bool IsOccupied => occupant != null;
 }

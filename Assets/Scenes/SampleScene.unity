@@ -387,6 +387,7 @@ MonoBehaviour:
   width: 8
   height: 8
   _drawGizmos: 1
+  _testPiece: {fileID: 11400000, guid: 58323c041ab3e804196338ea4c87db3f, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
