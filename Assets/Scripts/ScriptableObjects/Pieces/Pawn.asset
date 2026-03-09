@@ -16,3 +16,4 @@ MonoBehaviour:
   - direction: {x: 0, y: 1}
     biDirectional: 0
     maxSquares: 1
+  icon: {fileID: 1300032593054250100, guid: 5fc607d4a309878488907c619a00d16d, type: 3}

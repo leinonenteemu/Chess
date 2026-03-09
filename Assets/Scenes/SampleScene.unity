@@ -500,7 +500,8 @@ MonoBehaviour:
   width: 8
   height: 8
   _drawGizmos: 1
-  _testPiece: {fileID: 11400000, guid: 0c3b21310679a024b80b156c781dcd2c, type: 2}
+  _testPiece: {fileID: 11400000, guid: 58323c041ab3e804196338ea4c87db3f, type: 2}
+  _boardSetup: {fileID: 11400000, guid: 2a552d565f9841c40b36f012bbf096aa, type: 2}
 --- !u!1 &1115857099
 GameObject:
   m_ObjectHideFlags: 0
@@ -586,7 +587,7 @@ Transform:
   m_GameObject: {fileID: 1115857099}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.47, y: 3.2, z: -0.57}
+  m_LocalPosition: {x: -0.47, y: 2.15, z: -0.57}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

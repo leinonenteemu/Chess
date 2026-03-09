@@ -11,12 +11,31 @@ public class BoardGenerator : MonoBehaviour
 
     MovementSets _movementSets = new MovementSets();
     [SerializeField] Piece _testPiece;
-
+    [SerializeField] SO_BoardSetup _boardSetup;
     private bool IsValidSquare(Vector2Int squareCoords) 
     {
         if (squareCoords.x < 0 || squareCoords.y < 0) return false;
         if (squareCoords.x > width-1 || squareCoords.y > height-1) return false;
         return true;
+    }
+
+    private void SetupBoard() 
+    {
+        foreach (var setup in _boardSetup.pieceSetups) 
+        {
+            foreach (var position in setup.positions) 
+            {
+                if (IsValidSquare(position)) 
+                {
+                    Pawn p = new Pawn(_testPiece, setup.side);
+                    MovePieceToSquare(p, _squares[position.x,position.y]);
+                    GameObject g = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    var pos = new Vector3(p.currentSquare.x, p.currentSquare.y, 0);
+                    g.transform.localScale *= 0.5f;
+                    g.transform.position = pos + transform.position;
+                }
+            }
+        }
     }
 
     private void Awake()
@@ -30,6 +49,8 @@ public class BoardGenerator : MonoBehaviour
                 _squares[col, row] = square;
             }
         }
+
+        SetupBoard();
     }
 
     Pawn p;
