@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Chess Piece", menuName = "Scriptable Objects/New Chess Piece")]
@@ -6,6 +5,9 @@ public class Piece : ScriptableObject
 {
     [SerializeField] Movement[] movement;
     public Movement[] GetMovementSets => movement;
+
+    [SerializeField] Sprite icon;
+    public Sprite Icon => icon;
 }
 
 [System.Serializable]

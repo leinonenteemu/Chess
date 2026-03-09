@@ -32,21 +32,27 @@ public class BoardGenerator : MonoBehaviour
         }
     }
 
-    Pawn p = new Pawn();
+    Pawn p;
+    Pawn enemyPawn;
+
+    List<Square> possibleSquares = new List<Square>();
 
     private void Start()
     {
         //var list = _movementSets.GetSquares(new Vector2Int(2, 2), PieceType.Bishop);
         //var cleanedList = list.Where(coordinate => IsValidSquare(coordinate));
+        p = new Pawn(_testPiece, Side.White);
+        enemyPawn = new Pawn(_testPiece, Side.White);
+        MovePieceToSquare(enemyPawn, _squares[1,5]);
+        var newPositionList = getPossibleSquares(_testPiece.GetMovementSets, _squares[3, 4], p);
+        possibleSquares = newPositionList;
 
-        var newPositionList = getPossibleSquares(_testPiece.GetMovementSets, _squares[3, 6], p);
-
-        foreach (var c in newPositionList)
-        {
-            Pawn p = new Pawn();
-            Debug.Log("CorD: " +c);
-            MovePieceToSquare(p, _squares[c.x, c.y]);
-        }
+        //foreach (var c in newPositionList)
+        //{
+        //    p = new Pawn(_testPiece, Side.White);
+        //    Debug.Log("CorD: " +c);
+        //    MovePieceToSquare(p, _squares[c.x, c.y]);
+        //}
         Debug.Log("List count: " + newPositionList.Count());
     }
 
@@ -54,7 +60,7 @@ public class BoardGenerator : MonoBehaviour
     {
         if (!Application.isPlaying) return;
         if (!_drawGizmos) return;
-        foreach (var cell in _squares) 
+        foreach (var cell in possibleSquares) 
         {
             Debug.Log("Has occupant? " + cell.occupant != null);
             Gizmos.color = cell.occupant == null ? Color.red : Color.green;
@@ -81,32 +87,55 @@ public class BoardGenerator : MonoBehaviour
 
         foreach (var move in movements) 
         {
+            bool cutoffDirectional = false;
+            bool cutoffBidirectional = false;
             int maxSquares = move.GetMaxSquares();
             for (int i = 1; i <= maxSquares; i++) 
-            { 
+            {
                 int x = move.GetDirection().x * i;
                 int y = move.GetDirection().y * i;
-
                 Vector2Int pos = new Vector2Int(startSquare.x + x, startSquare.y + y);
-                
-                if (IsValidSquare(pos)) 
-                {
-                    Square square = _squares[pos.x, pos.y];
-                    if (square.IsOccupied && square.occupant.IsSameSidePiece(piece)) break;
-                    availableSquares.Add(_squares[pos.x,pos.y]); 
+
+                if (!cutoffDirectional) { 
+                    if (IsValidSquare(pos))
+                    {
+                        bool addSquare = true;
+                        Square square = _squares[pos.x, pos.y];
+                        if (square.IsOccupied)
+                        {
+                            cutoffDirectional = true;
+                            if (square.occupant.IsSameSidePiece(piece)) addSquare = false;
+                        }
+                        if (addSquare) availableSquares.Add(_squares[pos.x, pos.y]);
+                    }
+
                 }
 
-                if (move.IsBiDirectional()) 
+                if (move.IsBiDirectional() && !cutoffBidirectional)
                 {
                     pos = new Vector2Int(startSquare.x - x, startSquare.y - y);
                     if (IsValidSquare(pos))
                     {
+                        bool addSquare = true;
                         Square square = _squares[pos.x, pos.y];
-                        if (square.IsOccupied && square.occupant.IsSameSidePiece(piece)) break;
-                        availableSquares.Add(_squares[pos.x, pos.y]);
+                        if (square.IsOccupied)
+                        {
+                            cutoffBidirectional = true;
+                            if (square.occupant.IsSameSidePiece(piece))
+                            {
+                                addSquare = false;
+                            }
+                        }
+
+                        if (addSquare) availableSquares.Add(_squares[pos.x, pos.y]);
                     }
+
                 }
+
+                if (cutoffDirectional && cutoffBidirectional) break;
             }
+
+
         }
 
         return availableSquares;
